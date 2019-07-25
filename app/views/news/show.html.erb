@@ -1,0 +1,14 @@
+Overall sentiment: <strong><%= params.dig(:news,:sentiment,:document,:label) %></strong>
+<br /><br />
+<table border="1">
+    <tr>
+        <% params.dig(:news,:emotion,:document,:emotion).each do |key, value| %>
+            <th><%= key %></th>
+        <% end %>    
+    </tr>
+        <tr>
+        <% params.dig(:news,:emotion,:document,:emotion).each do |k, v| %>
+          <td><%= v %></td>
+        <% end %>
+    </tr>
+</table>

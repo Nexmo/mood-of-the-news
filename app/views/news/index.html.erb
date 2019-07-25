@@ -1,0 +1,44 @@
+<h1>The Mood of the News</h1>
+
+<% if current_user %>
+  Logged in as <%= current_user.email %>.
+  <br />
+  Your topic is <%= current_user.topic %>
+  <br />
+  Your phone number is <%= current_user.phone %>
+  <br />
+  <%= button_to "Get the mood", news_index_path, method: :post %>
+<% else %>
+  <h2>Login!</h2>
+
+  <%= form_for 'login' do |f| %>
+    <%= f.label :email %>
+    <%= f.text_field :email %>
+
+    <%= f.label :password %>
+    <%= f.password_field :password %>
+
+    <%= f.submit 'Login' %>
+  <% end %>
+
+  <h2>Don't have an account? Create one!</h2>
+
+  <%= form_for :users, url: users_path do |f| %>
+    <%= f.label :name %>
+    <%= f.text_field :name %>
+    
+    <%= f.label :email %>
+    <%= f.text_field :email %>
+
+    <%= f.label :phone %>
+    <%= f.text_field :phone %>
+
+    <%= f.label :topic %>
+    <%= f.text_field :topic %>
+
+    <%= f.label :password %>
+    <%= f.password_field :password %>
+
+    <%= f.submit 'Create' %>
+  <% end %>
+<% end %>

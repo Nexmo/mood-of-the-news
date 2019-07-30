@@ -20,6 +20,8 @@ gem 'nexmo_rails'
 gem 'news-api'
 gem 'ibm_watson'
 gem 'dotenv-rails'
+gem 'gemoji'
+gem 'gemoji-parser'
 
 # Use CoffeeScript for .coffee assets and views
 gem 'coffee-rails', '~> 4.2'

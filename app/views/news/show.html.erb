@@ -1,5 +1,13 @@
-Overall sentiment: <strong><%= params.dig(:news,:sentiment,:document,:label) %></strong>
+Your topic of <strong><%= current_user.topic %></strong> has an overall 
+<% if params.dig(:news,:sentiment,:document,:score).to_f < 0 %>
+    <%= EmojiParser.detokenize(':disappointed:') %>
+<% elsif params.dig(:news,:sentiment,:document,:score).to_f > 0 %>
+    <%= EmojiParser.detokenize(':simple_smile:') %>
+<% elsif params.dig(:news,:sentiment,:document,:score).to_f == 0 %>
+    <%= EmojiParser.detokenize(':neutral_face:') %>
+<% end %><strong><%= params.dig(:news,:sentiment,:document,:label) %></strong> sentiment.
 <br /><br />
+The <strong>tone</strong> of today's <%= current_user.topic %> headlines is:
 <table border="1">
     <tr>
         <% params.dig(:news,:emotion,:document,:emotion).each do |key, value| %>

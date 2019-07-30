@@ -16,12 +16,20 @@ class UsersController < ApplicationController
   end
 
   def update
+    if current_user
+      @user = User.find_by(email: params[:user][:email])
+      @user.update(user_params)
+      @user.save
+    else
+      flash[:warning] = 'You must be logged in to update your settings.'
+      redirect_to '/'
+    end
   end
 
   private
 
   def user_params
-    params.require(:users).permit(:name, :email, :phone, :topic, :password)
+    params.require(:user).permit(:name, :email, :phone, :topic, :password)
   end
 
 end

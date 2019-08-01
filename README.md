@@ -6,7 +6,7 @@ This is a demo app of the Nexmo Messages API integrated with IBM Watson Natural 
 
 * A [Nexmo account](https://dashboard.nexmo.com/sign-up)
 * A [IBM Watson account](https://www.ibm.com/watson/developer)
-* A [News API] account(https://newsapi.org/)
+* A [News API account](https://newsapi.org/)
 * Ruby on Rails
 * [ngrok](https://ngrok.io)
 

@@ -3,6 +3,7 @@ require 'ibm_watson/natural_language_understanding_v1'
 require 'json'
 require 'byebug'
 class NewsController < ApplicationController
+  skip_before_action :verify_authenticity_token
 
   def inbound
     # assign variables
@@ -53,10 +54,10 @@ class NewsController < ApplicationController
     ).result
 
     # send WhatsApp message
-    send_whatsapp_msg(response, recipient_number)
+    send_whatsapp_msg(response, topic, recipient_number)
   end
 
-  def send_whatsapp_msg(news, recipient_number) 
+  def send_whatsapp_msg(news, topic, recipient_number) 
     require 'net/https'
     require 'json'
 
@@ -74,7 +75,7 @@ class NewsController < ApplicationController
           'message' => {
             'content' => {
               'type' => 'text',
-              'text' => "Overall sentiment: #{news.dig(:news,:sentiment,:document,:label)}"
+              'text' => "Overall sentiment on #{topic}: #{news.dig(:news,:sentiment,:document,:label)}"
             }
           }  
         }.to_json

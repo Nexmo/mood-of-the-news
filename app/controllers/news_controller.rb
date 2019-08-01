@@ -10,13 +10,16 @@ class NewsController < ApplicationController
     # assign variables
     topic = params[:message][:content][:text]
     recipient_number = params[:from][:number]
-    
+
     # get headlines and process them for sentiment and tone
     analyze_headlines(topic, recipient_number)
+
+    head :no_content
   end
 
   def status
     puts params
+    head :no_content  
   end
 
   private

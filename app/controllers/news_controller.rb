@@ -4,64 +4,73 @@ require 'json'
 require 'byebug'
 class NewsController < ApplicationController
 
-  def index
+  def inbound
+    # assign variables
+    topic = params[:message][:content][:text]
+    recipient_number = params[:from][:number]
+
+    # get headlines and process them for sentiment and tone
+    analyze_headlines(topic, recipient_number)
   end
 
-  def create
-    # get the news headlines
+  def status
+    puts params
+  end
+
+  private
+
+  def generate_jwt_token
+    claims = {
+      application_id: ENV['NEXMO_APPLICATION_ID']
+    }
+    private_key = File.read('./private.key')
+    token = Nexmo::JWT.generate(claims, private_key)
+    token
+  end
+
+  def get_news_headlines(topic)
     news = News.new(ENV['news_api_key'])
-    headlines = news.get_everything(q: "#{current_user.topic}", from: "#{Date.today}", sortBy: "popularity")
+    headlines = news.get_everything(q: "#{topic}", from: "#{Date.today}", sortBy: "popularity")
     headline_string = ''
     headlines.each do |headline|
      headline_string << " #{headline.title}"
     end
+    headline_string
+  end
 
-    # process them for sentiment analysis
+  def analyze_headlines(topic, recipient_number)
     natural_language_understanding = IBMWatson::NaturalLanguageUnderstandingV1.new(
       iam_apikey: "#{ENV['watson_api_key']}",
       version: "2018-11-16"
     )
     natural_language_understanding.url = 'https://gateway-lon.watsonplatform.net/natural-language-understanding/api/v1/analyze?version=2018-11-16'
-    @response = natural_language_understanding.analyze(
-      text: headline_string,
+    response = natural_language_understanding.analyze(
+      text: get_news_headlines(topic),
       features: {
         "sentiment" => {},
         "emotion" => { "document" => true }
       }
     ).result
 
-    # redirect to show path
-    redirect_to news_show_path(news: @response)
-    messages_post_req(@response)
+    # send WhatsApp message
+    send_whatsapp_msg(response, recipient_number)
   end
 
-  def show
-    @news = params['news']
-  end
-
-  private
-
-  def messages_post_req(news) 
+  def send_whatsapp_msg(news, recipient_number) 
     require 'net/https'
     require 'json'
 
-    claims = {
-      application_id: ENV['NEXMO_APPLICATION_ID'],
-      nbf: 1564109791,
-      iat: 1564109095,
-      exp: 1595645095,
-    }
-    private_key = File.read('./private.key')
-    token = Nexmo::JWT.generate(claims, private_key)
     begin
         uri = URI('https://api.nexmo.com/v0.1/messages')
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = true
-        req = Net::HTTP::Post.new(uri.path, {'Content-Type' =>'application/json',  
-          'Authorization' => "Bearer #{token}"})
+        req = Net::HTTP::Post.new(uri.path, {
+          'Content-Type' => 'application/json',  
+          'Authorization' => "Bearer #{generate_jwt_token}"
+        })
         req.body = {
           'from' => {'type' => 'whatsapp', 'number' => ENV['NEXMO_WHATSAPP_NUMBER']},
-          'to' => {'type' => 'whatsapp', 'number' => PHONE_NUMBER},
+          'to' => {'type' => 'whatsapp', 'number' => recipient_number},
           'message' => {
             'content' => {
               'type' => 'text',

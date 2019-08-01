@@ -4,12 +4,13 @@ require 'json'
 require 'byebug'
 class NewsController < ApplicationController
   skip_before_action :verify_authenticity_token
+  include ActionView::Helpers::NumberHelper
 
   def inbound
     # assign variables
     topic = params[:message][:content][:text]
     recipient_number = params[:from][:number]
-
+    
     # get headlines and process them for sentiment and tone
     analyze_headlines(topic, recipient_number)
   end
@@ -61,6 +62,14 @@ class NewsController < ApplicationController
     require 'net/https'
     require 'json'
 
+    # define values
+    sentiment = news['sentiment']['document']['label']
+    sadness = number_to_percentage(news['emotion']['document']['emotion']['sadness'].to_f, precision: 0) 
+    joy = number_to_percentage(news['emotion']['document']['emotion']['joy'].to_f, precision: 0)
+    fear = number_to_percentage(news['emotion']['document']['emotion']['fear'].to_f, precision: 0)
+    disgust = number_to_percentage(news['emotion']['document']['emotion']['disgust'].to_f, precision: 0)
+    anger = number_to_percentage(news['emotion']['document']['emotion']['anger'].to_f, precision: 0)
+
     begin
         uri = URI('https://api.nexmo.com/v0.1/messages')
         http = Net::HTTP.new(uri.host, uri.port)
@@ -75,7 +84,11 @@ class NewsController < ApplicationController
           'message' => {
             'content' => {
               'type' => 'text',
-              'text' => "Overall sentiment on #{topic}: #{news.dig(:news,:sentiment,:document,:label)}"
+              'text' => <<~HEREDOC
+              Overall news sentiment on #{topic} is #{sentiment} with #{sadness} of sadness,
+              #{joy} of joy, #{fear} of fear, #{disgust} of disgust and #{anger} of anger
+              in emotional content.
+              HEREDOC
             }
           }  
         }.to_json

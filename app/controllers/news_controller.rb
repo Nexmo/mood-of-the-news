@@ -67,11 +67,12 @@ class NewsController < ApplicationController
 
     # define values
     sentiment = news['sentiment']['document']['label']
-    sadness = number_to_percentage(news['emotion']['document']['emotion']['sadness'].to_f, precision: 0) 
-    joy = number_to_percentage(news['emotion']['document']['emotion']['joy'].to_f, precision: 0)
-    fear = number_to_percentage(news['emotion']['document']['emotion']['fear'].to_f, precision: 0)
-    disgust = number_to_percentage(news['emotion']['document']['emotion']['disgust'].to_f, precision: 0)
-    anger = number_to_percentage(news['emotion']['document']['emotion']['anger'].to_f, precision: 0)
+    emotions = news['emotion']['document']['emotion']
+    sadness = number_to_percentage(emotions['sadness'] * 100) 
+    joy = number_to_percentage(emotions['joy'] * 100)
+    fear = number_to_percentage(emotions['fear'] * 100)
+    disgust = number_to_percentage(emotions['disgust'] * 100)
+    anger = number_to_percentage(emotions['anger'] * 100)
 
     begin
         uri = URI('https://api.nexmo.com/v0.1/messages')
@@ -88,9 +89,15 @@ class NewsController < ApplicationController
             'content' => {
               'type' => 'text',
               'text' => <<~HEREDOC
-              Overall news sentiment on #{topic} is #{sentiment} with #{sadness} of sadness,
+              Hello there! 👋
+
+              You asked for the mood of the news on the following topic: #{topic}. Here you go!
+
+              The overall news sentiment on #{topic} is #{sentiment} with #{sadness} of sadness,
               #{joy} of joy, #{fear} of fear, #{disgust} of disgust and #{anger} of anger
-              in emotional content.
+              in emotional tone.
+
+              Thank you for using Mood of the News powered by Nexmo, IBM Watson and the News API!
               HEREDOC
             }
           }  

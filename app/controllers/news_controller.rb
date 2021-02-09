@@ -1,4 +1,5 @@
 require 'news-api'
+require "ibm_watson/authenticators"
 require 'ibm_watson/natural_language_understanding_v1'
 require 'json'
 
@@ -48,11 +49,16 @@ class NewsController < ApplicationController
   end
 
   def analyze_headlines(topic, recipient_number)
-    natural_language_understanding = IBMWatson::NaturalLanguageUnderstandingV1.new(
-      iam_apikey: "#{ENV['watson_api_key']}",
-      version: "2018-11-16"
+    authenticator = IBMWatson::Authenticators::IamAuthenticator.new(
+      apikey: "#{ENV['watson_api_key']}"
     )
-    natural_language_understanding.url = 'https://gateway-lon.watsonplatform.net/natural-language-understanding/api/v1/analyze?version=2018-11-16'
+
+    natural_language_understanding = IBMWatson::NaturalLanguageUnderstandingV1.new(
+      authenticator: authenticator,
+      version: "2018-03-16"
+    )
+
+    natural_language_understanding.service_url = 'https://gateway-lon.watsonplatform.net/natural-language-understanding/api/v1/analyze?version=2018-11-16'
     response = natural_language_understanding.analyze(
       text: get_news_headlines(topic),
       language: "en",
@@ -68,7 +74,7 @@ class NewsController < ApplicationController
       }
     ).result
 
-    puts response
+    puts JSON.pretty_generate(response)
 
     # send WhatsApp message
     send_whatsapp_msg(response, topic, recipient_number)
